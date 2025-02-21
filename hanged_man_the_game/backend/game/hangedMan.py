@@ -1,8 +1,12 @@
 import json
 import random
+from logging import NullHandler
+
 import requests
 import os
 import sqlite3
+
+from django.http.request import RAISE_ERROR
 
 # Directorio actual del script (backend/game)
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -12,40 +16,22 @@ file_path = os.path.join(script_dir, "..", "dictionary", "diccionario.txt")
 
 # Conectar a la base de datos SQLite de forma relativa
 def connect_db():
-    db_path = os.path.join(script_dir, "..", "dbase", "hangedDB.db")
-    db_path = os.path.abspath(db_path)  # Convertir a ruta absoluta
+    #db_path = os.path.join(script_dir, "../../", "", "db.sqlite3")
+    ##db_path = os.path.abspath(db_path)  # Convertir a ruta absoluta
+    db_path = "C:/Users/CCindor/Desktop/Practica/PythonApp-HMG/hangedDB.db"
     return sqlite3.connect(db_path)
-
-# Función para agregar la columna 'remaining_lives' a la tabla 'game_step'
-def add_remaining_lives_column():
-    conn = connect_db()
-    cursor = conn.cursor()
-
-    try:
-        cursor.execute("ALTER TABLE game_step ADD COLUMN remaining_lives INTEGER")
-        conn.commit()
-    except sqlite3.OperationalError as e:
-        print("Error al agregar la columna:", e)
-    finally:
-        conn.close()
-
-# Llamar a la función para agregar la columna solo una vez al iniciar el script
-add_remaining_lives_column()
 
 # Registrar la palabra en la tabla 'word'
 def register_word(word_to_guess, language):
     conn = connect_db()
     cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM word WHERE word = ? AND language = ?", (word_to_guess, language))
-    word = cursor.fetchone()
-
-    if not word:
-        cursor.execute("INSERT INTO word (word, language, letters) VALUES (?, ?, ?)",
-                       (word_to_guess, language, len(word_to_guess)))
-        conn.commit()
+    word_to_guess = str(word_to_guess)
+    print(f"Saving word {word_to_guess}")
+    cursor.execute("INSERT INTO word (word, language, letters) VALUES (?, ?, ?)",
+                   (word_to_guess, language, len(word_to_guess)))
+    conn.commit()
     conn.close()
-
+    print("Saved word")
 # Registrar el resultado del juego en la tabla 'game_result'
 def register_game_result(execution_id, word_id, remaining_lives, won, used_letters):
     conn = connect_db()
@@ -144,10 +130,13 @@ def play():
 
     while lives > 0 and not guessed:
         body = get_body(word_display, language, lives, list(used_letters))  # Convertir set a lista para el cuerpo de la petición
-        res = requests.post(url, data=body, headers=headers)
+        res = requests.post(url, data=body, headers=headers,
+        timeout=10)
         data = json.loads(res.content)
-        guess = data["choices"][0]["message"]["content"]
+        if res.status_code != 200 or "choices" not in data:
+            raise Exception(f"Failed to connect with AI model. Status code: {res.status_code}")
 
+        guess = data["choices"][0]["message"]["content"]
         if guess in word_to_guess:
             if guess not in correct_letters:  # Evitar agregar letras repetidas
                 correct_letters.add(guess)  # Agregar al set de letras correctas
@@ -181,4 +170,11 @@ def play():
     steps = get_game_steps(execution_id)
     for step in steps:
         print(f"Step {step[0]}: Guess: {step[1]}, Remaining Lives: {step[2]}, Used Letters: {step[3]}")
+
+def download_dictionary():
+    url = "https://raw.githubusercontent.com/CSL-LABS/CrackingWordLists/refs/heads/master/dics/lang/spanish_es_AR.dic"
+    respuesta = requests.get(url)
+    splitlines = respuesta.content.splitlines()
+    for s in splitlines:
+        register_word(s, "spanish argentina")
 
