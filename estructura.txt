@@ -1,0 +1,64 @@
+Listado de rutas de carpetas
+C:.
+|   db.sqlite3
+|   estructura.txt
+|   hangedDB.db
+|   
++---.idea
+|   |   .gitignore
+|   |   .name
+|   |   misc.xml
+|   |   modules.xml
+|   |   PythonApp-HangedManGame.iml
+|   |   workspace.xml
+|   |   
+|   \---inspectionProfiles
+|           profiles_settings.xml
+|           
+\---hanged_man_the_game
+    |   __init__.py
+    |   
+    +---backend
+    |   |   db.sqlite3
+    |   |   __init__.py
+    |   |   
+    |   +---core
+    |   |   |   asgi.py
+    |   |   |   manage.py
+    |   |   |   settings.py
+    |   |   |   urls.py
+    |   |   |   wsgi.py
+    |   |   |   __init__.py
+    |   |   |   
+    |   |   \---__pycache__
+    |   |           settings.cpython-313.pyc
+    |   |           urls.cpython-313.pyc
+    |   |           wsgi.cpython-313.pyc
+    |   |           __init__.cpython-313.pyc
+    |   |           
+    |   +---dbase
+    |   |       hangedDB.db
+    |   |       hangedDB.py
+    |   |       __init__.py
+    |   |       
+    |   +---dictionary
+    |   |       diccionario.txt
+    |   |       download.py
+    |   |       __init__.py
+    |   |       
+    |   \---game
+    |       |   consumers.py
+    |       |   hangedMan.py
+    |       |   routing.py
+    |       |   urls.py
+    |       |   views.py
+    |       |   __init__.py
+    |       |   
+    |       \---__pycache__
+    |               hangedMan.cpython-313.pyc
+    |               urls.cpython-313.pyc
+    |               views.cpython-313.pyc
+    |               __init__.cpython-313.pyc
+    |               
+    +---frontend
+    \---__pycache__
